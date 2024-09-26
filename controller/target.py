@@ -53,3 +53,11 @@ def put(target_id : int):
         raise Exception("cent update")
     except Exception as e:
         return jsonify({"error": str(e)}), 400
+
+
+@targets_blueprint.route("/<int:target_id>", methods=['DELETE'])
+def delete(target_id : int):
+    try:
+        return jsonify(f"{delete_target(target_id)}"), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}),400

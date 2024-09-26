@@ -1,0 +1,106 @@
+
+
+
+
+this before index for first query
+
+select count(m.air_force), m.air_force, m.target_city from mission as m
+where extract(year from mission_date) = 1943
+group by m.air_force, m.target_city
+order by count(m.target_city) desc
+limit 1
+
+
+"Limit  (cost=6096.59..6096.59 rows=1 width=30) (actual time=61.130..61.236 rows=1 loops=1)"
+"  ->  Sort  (cost=6096.59..6098.77 rows=871 width=30) (actual time=61.125..61.231 rows=1 loops=1)"
+"        Sort Key: (count(target_city)) DESC"
+"        Sort Method: top-N heapsort  Memory: 25kB"
+"        ->  Finalize GroupAggregate  (cost=5982.11..6092.24 rows=871 width=30) (actual time=56.286..60.974 rows=1967 loops=1)"
+"              Group Key: air_force, target_city"
+"              ->  Gather Merge  (cost=5982.11..6076.11 rows=742 width=30) (actual time=56.282..60.351 rows=2132 loops=1)"
+"                    Workers Planned: 2"
+"                    Workers Launched: 2"
+"                    ->  Partial GroupAggregate  (cost=4982.09..4990.44 rows=371 width=30) (actual time=19.132..20.284 rows=711 loops=3)"
+"                          Group Key: air_force, target_city"
+"                          ->  Sort  (cost=4982.09..4983.02 rows=371 width=14) (actual time=19.125..19.397 rows=7738 loops=3)"
+"                                Sort Key: air_force, target_city"
+"                                Sort Method: quicksort  Memory: 1477kB"
+"                                Worker 0:  Sort Method: quicksort  Memory: 25kB"
+"                                Worker 1:  Sort Method: quicksort  Memory: 57kB"
+"                                ->  Parallel Seq Scan on mission m  (cost=0.00..4966.26 rows=371 width=14) (actual time=0.009..7.472 rows=7738 loops=3)"
+"                                      Filter: (EXTRACT(year FROM mission_date) = '1943'::numeric)"
+"                                      Rows Removed by Filter: 51689"
+"Planning Time: 0.130 ms"
+"Execution Time: 61.459 ms"
+
+this is for query 2
+
+select bomb_damage_assessment, count(target_country) from mission
+where bomb_damage_assessment is not null
+and airborne_aircraft > 5
+group by target_country, bomb_damage_assessment
+order by count(bomb_damage_assessment) desc
+
+"        ->  Gather Merge  (cost=5780.81..5784.10 rows=26 width=53) (actual time=149.190..152.952 rows=21 loops=1)"
+"              Workers Planned: 2"
+"              Workers Launched: 2"
+"              ->  Partial GroupAggregate  (cost=4780.79..4781.08 rows=13 width=53) (actual time=10.338..10.345 rows=7 loops=3)"
+"                    Group Key: target_country, bomb_damage_assessment"
+"                    ->  Sort  (cost=4780.79..4780.82 rows=13 width=37) (actual time=10.335..10.336 rows=11 loops=3)"
+"                          Sort Key: target_country, bomb_damage_assessment"
+"                          Sort Method: quicksort  Memory: 26kB"
+"                          Worker 0:  Sort Method: quicksort  Memory: 25kB"
+"                          Worker 1:  Sort Method: quicksort  Memory: 25kB"
+"                          ->  Parallel Seq Scan on mission  (cost=0.00..4780.55 rows=13 width=37) (actual time=7.005..10.019 rows=11 loops=3)"
+"                                Filter: ((bomb_damage_assessment IS NOT NULL) AND (airborne_aircraft > '5'::numeric))"
+"                                Rows Removed by Filter: 59416"
+"Planning Time: 0.123 ms"
+"Execution Time: 153.019 ms"
+
+
+i create index for each stuff did i do where and then it became faster because is it indexing
+and the query is became faster
+
+CREATE INDEX idx_mission_date ON mission (extract(year from mission_date));
+CREATE INDEX idx_airborne_aircraft ON mission (airborne_aircraft);
+CREATE INDEX idx_bomb_damage_assessment ON mission (bomb_damage_assessment);
+
+
+
+"Limit  (cost=2158.98..2158.98 rows=1 width=30) (actual time=8.767..8.769 rows=1 loops=1)"
+"  ->  Sort  (cost=2158.98..2161.16 rows=871 width=30) (actual time=8.766..8.767 rows=1 loops=1)"
+"        Sort Key: (count(target_city)) DESC"
+"        Sort Method: top-N heapsort  Memory: 25kB"
+"        ->  HashAggregate  (cost=2145.91..2154.62 rows=871 width=30) (actual time=8.348..8.555 rows=1967 loops=1)"
+"              Group Key: air_force, target_city"
+"              Batches: 1  Memory Usage: 369kB"
+"              ->  Bitmap Heap Scan on mission m  (cost=19.33..2137.00 rows=891 width=14) (actual time=0.997..2.971 rows=23214 loops=1)"
+"                    Recheck Cond: (EXTRACT(year FROM mission_date) = '1943'::numeric)"
+"                    Heap Blocks: exact=949"
+"                    ->  Bitmap Index Scan on idx_mission_date  (cost=0.00..19.10 rows=891 width=0) (actual time=0.916..0.916 rows=23214 loops=1)"
+"                          Index Cond: (EXTRACT(year FROM mission_date) = '1943'::numeric)"
+"Planning Time: 1.518 ms"
+"Execution Time: 8.932 ms"
+
+this is for query 2
+
+"Sort  (cost=380.01..380.09 rows=32 width=53) (actual time=6.115..6.116 rows=21 loops=1)"
+"  Sort Key: (count(bomb_damage_assessment)) DESC"
+"  Sort Method: quicksort  Memory: 26kB"
+"  ->  GroupAggregate  (cost=378.49..379.21 rows=32 width=53) (actual time=6.096..6.103 rows=21 loops=1)"
+"        Group Key: target_country, bomb_damage_assessment"
+"        ->  Sort  (cost=378.49..378.57 rows=32 width=37) (actual time=6.090..6.091 rows=32 loops=1)"
+"              Sort Key: target_country, bomb_damage_assessment"
+"              Sort Method: quicksort  Memory: 26kB"
+"              ->  Bitmap Heap Scan on mission  (cost=5.11..377.69 rows=32 width=37) (actual time=0.073..0.133 rows=32 loops=1)"
+"                    Recheck Cond: (bomb_damage_assessment IS NOT NULL)"
+"                    Filter: (airborne_aircraft > '5'::numeric)"
+"                    Rows Removed by Filter: 72"
+"                    Heap Blocks: exact=53"
+"                    ->  Bitmap Index Scan on idx_bomb_damage_assessment  (cost=0.00..5.10 rows=107 width=0) (actual time=0.020..0.020 rows=104 loops=1)"
+"                          Index Cond: (bomb_damage_assessment IS NOT NULL)"
+"Planning Time: 0.158 ms"
+"Execution Time: 6.140 ms"
+
+
+
