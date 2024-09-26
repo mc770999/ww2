@@ -39,6 +39,7 @@ def create():
         return jsonify({"error": str(e)}),400
 
 
+
 @targets_blueprint.route("/<int:target_id>", methods=['PUT'])
 def put(target_id : int):
     try:
