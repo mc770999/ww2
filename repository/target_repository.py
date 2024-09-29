@@ -1,9 +1,7 @@
-from sqlalchemy import Integer
 from sqlalchemy.exc import SQLAlchemyError
 from returns.maybe import Maybe
 from config.base import session_factory
 from models import Target
-from typing import List
 from returns.result import Success, Failure
 
 

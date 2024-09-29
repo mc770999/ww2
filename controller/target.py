@@ -2,10 +2,6 @@ from dataclasses import asdict
 
 from flask import Blueprint, jsonify, request
 from returns.maybe import Nothing
-from toolz import pipe
-from toolz.curried import reduce
-
-
 from repository.target_repository import *
 from models import Target
 
@@ -44,7 +40,6 @@ def create():
 def put(target_id : int):
     try:
         all_data = request.json
-        # Create the question using the data from the request
         new_target = Target(target_priority=all_data["target_priority"],target_type_id=all_data["target_type_id"],city_id=all_data["city_id"],target_industry=all_data["target_industry"])
         target = find_target_by_id(target_id).unwrap() if find_target_by_id(target_id) is not Nothing else False
         if target:

@@ -1,10 +1,8 @@
 from flask import Blueprint, jsonify
 from returns.result import Success, Failure
-
 from repository.mission_repository import get_all_missions, get_mission_by_id
 
 mission_blueprint = Blueprint('mission', __name__)
-
 
 
 @mission_blueprint.route('/', methods=['GET'])

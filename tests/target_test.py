@@ -1,7 +1,5 @@
-import pytest
 from returns.maybe import Nothing
 from repository.target_repository import *
-
 
 
 def test_create_target():

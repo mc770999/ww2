@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, Column, Date, String, Numeric
+from sqlalchemy import Integer, Column, Date, String
 from config.base import Base
 
 class Mission(Base):

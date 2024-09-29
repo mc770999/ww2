@@ -1,9 +1,6 @@
 from controller.mission import mission_blueprint
 from controller.target import targets_blueprint
-
 from flask import Flask
-
-
 
 app = Flask(__name__)
 
