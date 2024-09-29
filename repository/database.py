@@ -11,7 +11,7 @@ def create_tables():
 
 
 
-def insert_into_all_tables():
+def add_all_tables():
     insert_table_countries()
     insert_table_cities()
     insert_table_targets_type()
@@ -121,5 +121,5 @@ on conflict (country_name) do nothing;
         """))
         session.commit()
 
-        
-insert_into_all_tables()
+
+add_all_tables()
