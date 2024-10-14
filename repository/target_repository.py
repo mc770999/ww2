@@ -28,6 +28,7 @@ def update_target(t_id : int, new_target : Target):
     except SQLAlchemyError as e:
         print("update_target failed", str(e))
 
+  
 def delete_target(t_id):
     try:
         with session_factory() as session:
